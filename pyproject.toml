@@ -1,0 +1,17 @@
+[project]
+name = "leverage-3x"
+version = "0.1.0"
+description = "Leveraged investment analysis tool for S&P 500 and Nasdaq 100"
+authors = [
+    { name = "Cheol Joo", email = "cheoljoo@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "yfinance>=0.2.32",
+    "pandas>=2.0.0",
+    "matplotlib>=3.8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
