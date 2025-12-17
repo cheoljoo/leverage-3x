@@ -1,0 +1,118 @@
+# Leveraged Investment Analysis Tool
+
+A Python tool for analyzing daily 10,000 KRW investments in 3x and 4x leveraged S&P 500 (SPY) and Nasdaq 100 (QQQ) products, with automatic convergence signal detection.
+
+## Introduction
+
+This project is inspired by [this YouTube video](https://youtube.com/shorts/TlbQ3ao86Cg?si=bP0XwIYXbGonwUnu), which demonstrates the power of 3x-leveraged investment strategies.
+
+## Inspiration
+
+- The Nasdaq is closing in on the S&P 500, so I think it's a great time to buy.
+- Usually, we'll just buy stocks on a regular basis. But when the Nasdaq and S&P 500 charts look like they're closing in on each other, I think buying more will really pay off.
+
+## Features
+
+- **Daily Investment Simulation**: Models daily 10,000 KRW purchases from any date range
+- **Multiple Leverage Options**: Analyze both 3x and 4x leveraged strategies
+- **Convergence Detection**: Automatically identifies when S&P 500 and Nasdaq returns are similar (buy opportunity signals)
+- **Flexible Date Range**: Specify custom start/end dates with `--start` and `--end`
+- **Display Control**: Use `--size` parameter to show only the last N years while maintaining full calculations
+- **Multi-chart Visualization**: 
+  - 3x Leverage chart
+  - 4x Leverage chart
+  - 3x vs 4x Comparison
+  - Price comparison with dual Y-axes
+
+## Requirements
+
+- Python 3.13+
+- Dependencies: `yfinance`, `pandas`, `matplotlib`
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/cheoljoo/leverage-3x.git
+cd leverage-3x
+
+# Install with uv (recommended)
+uv sync
+```
+
+## Usage
+
+### Basic Usage (Default: 2016-01-01 to Today)
+```bash
+uv run main.py
+```
+
+### With Custom Date Range
+```bash
+uv run main.py --start 2020-01-01 --end 2024-12-31
+```
+
+### With Display Size (Show last 3 years, but calculate from start date)
+```bash
+uv run main.py --start 2020-01-01 --end 2024-12-31 --size 3
+```
+
+### Options
+- `--start YYYY-MM-DD`: Start date for calculation (default: 2016-01-01)
+- `--end YYYY-MM-DD`: End date for calculation (default: today)
+- `--size N`: Display only the last N years in graphs, while maintaining full calculations (default: 0, shows all)
+
+## Output
+
+The tool generates 4 high-resolution PNG charts:
+1. `leverage_3x_investment_[dates].png` - 3x leverage analysis
+2. `leverage_4x_investment_[dates].png` - 4x leverage analysis
+3. `leverage_comparison_[dates].png` - Direct comparison of 3x vs 4x
+4. `leverage_with_prices_[dates].png` - Investment value with raw stock prices overlay
+
+## Example Output
+
+```
+============================================================
+Leveraged Investment Analysis
+============================================================
+Period: 2023-01-01 to 2024-12-31
+
+3x Leverage Final Values:
+  S&P 500 (SPY): ₩6,289,054
+  Nasdaq 100 (QQQ): ₩6,621,938
+
+4x Leverage Final Values:
+  S&P 500 (SPY): ₩6,289,054
+  Nasdaq 100 (QQQ): ₩6,621,938
+
+📊 Convergence Signals (Buy Opportunity Areas):
+  3x Leverage: 1 days detected
+  4x Leverage: 1 days detected
+  3x Convergence dates (first 10): ['2023-01-12']
+```
+
+## How It Works
+
+### Daily Investment Simulation
+- Each day, 10,000 KRW is invested in the stock
+- Number of shares = 10,000 KRW / (Stock Price × 1,200)
+- Portfolio value accumulates over time
+
+### Leverage Calculation
+- Daily returns are multiplied by the leverage factor (3x or 4x)
+- Compound returns are calculated: `(1 + leveraged_return).cumprod() - 1`
+
+### Convergence Signal Detection
+- Compares cumulative returns between S&P 500 and Nasdaq
+- Uses a 15-day rolling window to smooth the difference
+- Identifies periods where the return difference < 50
+- Enforces 100-day minimum gap between signals to avoid clustering
+
+## License
+
+MIT
+
+## Author
+
+Cheol Joo (cheoljoo@gmail.com)
