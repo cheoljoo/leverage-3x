@@ -35,8 +35,16 @@ def calculate_leveraged_investment(ticker, leverage_factor=3, start_date="2016-0
     # Download price data
     data = yf.download(ticker, start=start_date, end=end_date, progress=False)
     
+    # Handle MultiIndex columns from yfinance
+    if isinstance(data.columns, pd.MultiIndex):
+        # Get the first level (price type)
+        data.columns = data.columns.get_level_values(0)
+    
+    # Use 'Close' instead of 'Adj Close' (yfinance changed the default)
+    close_col = 'Close' if 'Close' in data.columns else 'Adj Close'
+    
     # Calculate daily returns
-    data['Daily_Return'] = data['Adj Close'].pct_change()
+    data['Daily_Return'] = data[close_col].pct_change()
     
     # Apply leverage to returns
     data['Leveraged_Return'] = data['Daily_Return'] * leverage_factor
@@ -54,7 +62,7 @@ def calculate_leveraged_investment(ticker, leverage_factor=3, start_date="2016-0
     for idx, row in data.iterrows():
         # Calculate price in KRW (assuming 1 USD = 1,200 KRW for simplicity)
         # In real scenario, use actual exchange rate
-        price_krw = row['Adj Close'] * 1200
+        price_krw = row[close_col] * 1200
         
         # Buy shares with daily investment
         if price_krw > 0:
@@ -168,6 +176,16 @@ def main():
     print("Downloading raw price data...")
     sp500_prices = yf.download('SPY', start=start_date, end=end_date, progress=False)
     nasdaq_prices = yf.download('QQQ', start=start_date, end=end_date, progress=False)
+    
+    # Handle MultiIndex columns from yfinance
+    if isinstance(sp500_prices.columns, pd.MultiIndex):
+        sp500_prices.columns = sp500_prices.columns.get_level_values(0)
+    if isinstance(nasdaq_prices.columns, pd.MultiIndex):
+        nasdaq_prices.columns = nasdaq_prices.columns.get_level_values(0)
+    
+    # Determine which column to use (Close or Adj Close)
+    sp500_close_col = 'Close' if 'Close' in sp500_prices.columns else 'Adj Close'
+    nasdaq_close_col = 'Close' if 'Close' in nasdaq_prices.columns else 'Adj Close'
     
     # Calculate 4x leverage
     print("Calculating 4x leverage...")
@@ -331,9 +349,9 @@ def main():
                    label='Convergence Signal', zorder=5, edgecolors='#C71585', linewidth=2)
     
     # Plot raw prices on secondary axis (filtered by display date range)
-    ax1_twin.plot(sp500_prices.index[mask_3x_price], sp500_prices.loc[mask_3x_price, 'Adj Close'], 
+    ax1_twin.plot(sp500_prices.index[mask_3x_price], sp500_prices.loc[mask_3x_price, sp500_close_col], 
                   label='SPY Price', linewidth=1.5, color='#1f77b4', alpha=0.5, linestyle='--')
-    ax1_twin.plot(nasdaq_prices.index[mask_3x_price], nasdaq_prices.loc[mask_3x_price, 'Adj Close'], 
+    ax1_twin.plot(nasdaq_prices.index[mask_3x_price], nasdaq_prices.loc[mask_3x_price, nasdaq_close_col], 
                   label='QQQ Price', linewidth=1.5, color='#ff7f0e', alpha=0.5, linestyle='--')
     
     ax1.set_xlabel('Date', fontsize=11)
@@ -364,9 +382,9 @@ def main():
                    label='Convergence Signal', zorder=5, edgecolors='#228B22', linewidth=2)
     
     # Plot raw prices on secondary axis (filtered by display date range)
-    ax2_twin.plot(sp500_prices.index[mask_4x_price], sp500_prices.loc[mask_4x_price, 'Adj Close'], 
+    ax2_twin.plot(sp500_prices.index[mask_4x_price], sp500_prices.loc[mask_4x_price, sp500_close_col], 
                   label='SPY Price', linewidth=1.5, color='#2ca02c', alpha=0.5, linestyle='--')
-    ax2_twin.plot(nasdaq_prices.index[mask_4x_price], nasdaq_prices.loc[mask_4x_price, 'Adj Close'], 
+    ax2_twin.plot(nasdaq_prices.index[mask_4x_price], nasdaq_prices.loc[mask_4x_price, nasdaq_close_col], 
                   label='QQQ Price', linewidth=1.5, color='#d62728', alpha=0.5, linestyle='--')
     
     ax2.set_xlabel('Date', fontsize=11)
