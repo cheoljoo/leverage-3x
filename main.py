@@ -400,6 +400,46 @@ def main():
     plt.savefig(f'leverage_with_prices_{start_date}_to_{end_date}.png', dpi=300, bbox_inches='tight')
     print(f"Price comparison graph saved as 'leverage_with_prices_{start_date}_to_{end_date}.png'")
     
+    # Create difference visualization (Nasdaq - S&P500 for 3x and 4x)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+    
+    # Filter data by display date range
+    mask_diff = (sp500_3x.index >= display_start_date) & (sp500_3x.index <= end_date_obj)
+    
+    # 3x Leverage: Nasdaq(3x) - S&P500(3x)
+    diff_3x = nasdaq_3x.loc[mask_diff, 'Cumulative_Value'] / 1_000_000 - sp500_3x.loc[mask_diff, 'Cumulative_Value'] / 1_000_000
+    
+    ax1.plot(sp500_3x.index[mask_diff], diff_3x, linewidth=2.5, color='#d62728', label='Nasdaq(3x) - S&P500(3x)')
+    ax1.axhline(y=0, color='gray', linestyle='--', alpha=0.7, label='Zero Line')
+    ax1.fill_between(sp500_3x.index[mask_diff], diff_3x, 0, where=(diff_3x >= 0), alpha=0.3, color='#2ca02c', label='Nasdaq > S&P500')
+    ax1.fill_between(sp500_3x.index[mask_diff], diff_3x, 0, where=(diff_3x < 0), alpha=0.3, color='#1f77b4', label='S&P500 > Nasdaq')
+    
+    ax1.set_xlabel('Date', fontsize=11)
+    ax1.set_ylabel('Value Difference (Million KRW)', fontsize=11)
+    ax1.set_title(f'3x Leverage: Nasdaq(3x) - S&P500(3x) ({start_date} ~ {end_date})', fontsize=12, fontweight='bold')
+    ax1.legend(fontsize=10, loc='best')
+    ax1.grid(True, alpha=0.3)
+    ax1.tick_params(axis='x', rotation=45)
+    
+    # 4x Leverage: Nasdaq(4x) - S&P500(4x)
+    diff_4x = nasdaq_4x.loc[mask_diff, 'Cumulative_Value'] / 1_000_000 - sp500_4x.loc[mask_diff, 'Cumulative_Value'] / 1_000_000
+    
+    ax2.plot(sp500_4x.index[mask_diff], diff_4x, linewidth=2.5, color='#ff7f0e', label='Nasdaq(4x) - S&P500(4x)')
+    ax2.axhline(y=0, color='gray', linestyle='--', alpha=0.7, label='Zero Line')
+    ax2.fill_between(sp500_4x.index[mask_diff], diff_4x, 0, where=(diff_4x >= 0), alpha=0.3, color='#2ca02c', label='Nasdaq > S&P500')
+    ax2.fill_between(sp500_4x.index[mask_diff], diff_4x, 0, where=(diff_4x < 0), alpha=0.3, color='#1f77b4', label='S&P500 > Nasdaq')
+    
+    ax2.set_xlabel('Date', fontsize=11)
+    ax2.set_ylabel('Value Difference (Million KRW)', fontsize=11)
+    ax2.set_title(f'4x Leverage: Nasdaq(4x) - S&P500(4x) ({start_date} ~ {end_date})', fontsize=12, fontweight='bold')
+    ax2.legend(fontsize=10, loc='best')
+    ax2.grid(True, alpha=0.3)
+    ax2.tick_params(axis='x', rotation=45)
+    
+    plt.tight_layout()
+    plt.savefig(f'leverage_difference_{start_date}_to_{end_date}.png', dpi=300, bbox_inches='tight')
+    print(f"Difference graph saved as 'leverage_difference_{start_date}_to_{end_date}.png'")
+    
     plt.show()
 
 
