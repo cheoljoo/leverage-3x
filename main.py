@@ -86,6 +86,57 @@ def calculate_leveraged_investment(ticker, leverage_factor=3, start_date="2016-0
 
 
 
+
+def get_financial_events():
+    """
+    Get major financial events since 2000 for marking on charts.
+    
+    Returns:
+        List of tuples: (date_str, event_name, short_description)
+    """
+    events = [
+        ('2000-03-10', 'Dot-com Bubble', 'Tech bubble peak'),
+        ('2001-09-11', '9/11 Attacks', 'Terrorist attacks'),
+        ('2008-09-15', 'Lehman Brothers', 'Financial crisis'),
+        ('2009-03-09', 'Financial Crisis Low', 'Market bottom'),
+        ('2011-08-05', 'US Debt Downgrade', 'S&P downgrade'),
+        ('2020-03-23', 'COVID-19 Low', 'Market crash bottom'),
+        ('2021-01-28', 'GME Short Squeeze', 'Meme stock rally'),
+        ('2022-09-28', 'UK Gilt Crisis', 'LDI crisis'),
+        ('2023-03-10', 'SVB Collapse', 'Bank run/failure'),
+        ('2024-08-05', 'Japan Yen Crisis', 'BOJ policy shift'),
+    ]
+    return events
+
+
+
+def mark_financial_events(ax, start_date_obj, end_date_obj, data_index):
+    """
+    Mark financial events on the chart.
+    
+    Args:
+        ax: Matplotlib axis
+        start_date_obj: Start date as datetime object
+        end_date_obj: End date as datetime object
+        data_index: Index from data to align with
+    """
+    events = get_financial_events()
+    
+    for event_date_str, event_name, event_desc in events:
+        event_date = pd.to_datetime(event_date_str)
+        
+        # Only mark events within the display range
+        if start_date_obj <= event_date <= end_date_obj and event_date in data_index:
+            # Add vertical line at event date
+            ax.axvline(x=event_date, color='gray', linestyle=':', alpha=0.5, linewidth=1.5)
+            
+            # Add text label at the top of the plot
+            y_pos = ax.get_ylim()[1] * 0.95
+            ax.text(event_date, y_pos, event_name, rotation=45, ha='right', va='top',
+                   fontsize=8, color='#555555', fontweight='bold',
+                   bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.3))
+
+
 def main():
     """Main execution function"""
     parser = argparse.ArgumentParser(description='Leveraged Investment Analysis Tool')
@@ -190,6 +241,10 @@ def main():
     plt.axhline(y=total_investment, color='gray', linestyle='--', 
                 label=f'Total Investment (₩{total_investment*1_000_000:,.0f})', alpha=0.7)
     
+    # Mark financial events
+    ax = plt.gca()
+    mark_financial_events(ax, display_start_date, end_date_obj, sp500_3x.index)
+    
     plt.xlabel('Date', fontsize=12)
     plt.ylabel('Value (Million KRW)', fontsize=12)
     plt.title(f'Daily 10,000 KRW Investment in 3x Leveraged Products ({start_date} ~ {end_date}){size_label}', fontsize=14, fontweight='bold')
@@ -215,6 +270,10 @@ def main():
     
     plt.axhline(y=total_investment, color='gray', linestyle='--', 
                 label=f'Total Investment (₩{total_investment*1_000_000:,.0f})', alpha=0.7)
+    
+    # Mark financial events
+    ax = plt.gca()
+    mark_financial_events(ax, display_start_date, end_date_obj, sp500_4x.index)
     
     plt.xlabel('Date', fontsize=12)
     plt.ylabel('Value (Million KRW)', fontsize=12)
@@ -247,6 +306,10 @@ def main():
     
     plt.axhline(y=total_investment, color='gray', linestyle='--', 
                 label=f'Total Investment (₩{total_investment*1_000_000:,.0f})', alpha=0.7)
+    
+    # Mark financial events
+    ax = plt.gca()
+    mark_financial_events(ax, display_start_date, end_date_obj, sp500_3x.index)
     
     plt.xlabel('Date', fontsize=12)
     plt.ylabel('Value (Million KRW)', fontsize=12)
@@ -282,6 +345,9 @@ def main():
     ax1_twin.plot(nasdaq_prices.index[mask_3x_price_nasdaq_prices], nasdaq_prices.loc[mask_3x_price_nasdaq_prices, nasdaq_close_col], 
                   label='QQQ Price', linewidth=1.5, color='#ff7f0e', alpha=0.5, linestyle='--')
     
+    # Mark financial events on ax1
+    mark_financial_events(ax1, display_start_date, end_date_obj, sp500_3x.index)
+    
     ax1.set_xlabel('Date', fontsize=11)
     ax1.set_ylabel('Leverage Investment Value (Million KRW)', fontsize=11)
     ax1_twin.set_ylabel('Stock Price (USD)', fontsize=11)
@@ -310,6 +376,9 @@ def main():
                   label='SPY Price', linewidth=1.5, color='#2ca02c', alpha=0.5, linestyle='--')
     ax2_twin.plot(nasdaq_prices.index[mask_4x_price_nasdaq_prices], nasdaq_prices.loc[mask_4x_price_nasdaq_prices, nasdaq_close_col], 
                   label='QQQ Price', linewidth=1.5, color='#d62728', alpha=0.5, linestyle='--')
+    
+    # Mark financial events on ax2
+    mark_financial_events(ax2, display_start_date, end_date_obj, sp500_4x.index)
     
     ax2.set_xlabel('Date', fontsize=11)
     ax2.set_ylabel('Leverage Investment Value (Million KRW)', fontsize=11)
@@ -341,6 +410,9 @@ def main():
     ax1.fill_between(sp500_3x.index[mask_diff_sp500_3x], diff_3x, 0, where=(diff_3x >= 0), alpha=0.3, color='#2ca02c', label='Nasdaq > S&P500')
     ax1.fill_between(sp500_3x.index[mask_diff_sp500_3x], diff_3x, 0, where=(diff_3x < 0), alpha=0.3, color='#1f77b4', label='S&P500 > Nasdaq')
     
+    # Mark financial events on ax1
+    mark_financial_events(ax1, display_start_date, end_date_obj, sp500_3x.index)
+    
     ax1.set_xlabel('Date', fontsize=11)
     ax1.set_ylabel('Value Difference (Million KRW)', fontsize=11)
     ax1.set_title(f'3x Leverage: Nasdaq(3x) - S&P500(3x) ({start_date} ~ {end_date}){size_label}', fontsize=12, fontweight='bold')
@@ -355,6 +427,9 @@ def main():
     ax2.axhline(y=0, color='gray', linestyle='--', alpha=0.7, label='Zero Line')
     ax2.fill_between(sp500_4x.index[mask_diff_sp500_4x], diff_4x, 0, where=(diff_4x >= 0), alpha=0.3, color='#2ca02c', label='Nasdaq > S&P500')
     ax2.fill_between(sp500_4x.index[mask_diff_sp500_4x], diff_4x, 0, where=(diff_4x < 0), alpha=0.3, color='#1f77b4', label='S&P500 > Nasdaq')
+    
+    # Mark financial events on ax2
+    mark_financial_events(ax2, display_start_date, end_date_obj, sp500_4x.index)
     
     ax2.set_xlabel('Date', fontsize=11)
     ax2.set_ylabel('Value Difference (Million KRW)', fontsize=11)
@@ -398,6 +473,9 @@ def main():
     ax1.fill_between(sp500_3x.index[mask_return_sp500_3x], sp500_3x_return_rate[mask_return_sp500_3x], 0, 
                      where=(sp500_3x_return_rate[mask_return_sp500_3x] < 0), alpha=0.2, color='#d62728')
     
+    # Mark financial events on ax1
+    mark_financial_events(ax1, display_start_date, end_date_obj, sp500_3x.index)
+    
     ax1.set_xlabel('Date', fontsize=11)
     ax1.set_ylabel('Return Rate (%)', fontsize=11)
     ax1.set_title(f'3x Leverage Daily Return Rate ({start_date} ~ {end_date}){size_label}', fontsize=12, fontweight='bold')
@@ -422,6 +500,9 @@ def main():
                      where=(sp500_4x_return_rate[mask_return_sp500_4x] >= 0), alpha=0.2, color='#2ca02c')
     ax2.fill_between(sp500_4x.index[mask_return_sp500_4x], sp500_4x_return_rate[mask_return_sp500_4x], 0, 
                      where=(sp500_4x_return_rate[mask_return_sp500_4x] < 0), alpha=0.2, color='#d62728')
+    
+    # Mark financial events on ax2
+    mark_financial_events(ax2, display_start_date, end_date_obj, sp500_4x.index)
     
     ax2.set_xlabel('Date', fontsize=11)
     ax2.set_ylabel('Return Rate (%)', fontsize=11)
@@ -464,6 +545,9 @@ def main():
                      where=(return_rate_diff_3x[mask_return_diff_sp500_3x] < 0), alpha=0.3, color='#1f77b4', 
                      label='S&P500 Better')
     
+    # Mark financial events on ax1
+    mark_financial_events(ax1, display_start_date, end_date_obj, sp500_3x.index)
+    
     ax1.set_xlabel('Date', fontsize=11)
     ax1.set_ylabel('Return Rate Difference (%)', fontsize=11)
     ax1.set_title(f'3x Leverage: Nasdaq Return Rate - S&P500 Return Rate ({start_date} ~ {end_date}){size_label}', 
@@ -490,6 +574,9 @@ def main():
     ax2.fill_between(sp500_4x.index[mask_return_diff_sp500_4x], return_rate_diff_4x[mask_return_diff_sp500_4x], 0, 
                      where=(return_rate_diff_4x[mask_return_diff_sp500_4x] < 0), alpha=0.3, color='#1f77b4', 
                      label='S&P500 Better')
+    
+    # Mark financial events on ax2
+    mark_financial_events(ax2, display_start_date, end_date_obj, sp500_4x.index)
     
     ax2.set_xlabel('Date', fontsize=11)
     ax2.set_ylabel('Return Rate Difference (%)', fontsize=11)
