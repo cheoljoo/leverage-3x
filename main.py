@@ -3,7 +3,7 @@
 Leveraged Investment Analysis Tool
 
 Simulates daily 10,000 KRW investments in 3x and 4x leveraged S&P 500 and Nasdaq 100 products
-from 2016 to present day, with convergence signal detection.
+from 2016 to present day.
 """
 
 import yfinance as yf
@@ -84,70 +84,6 @@ def calculate_leveraged_investment(ticker, leverage_factor=3, start_date="2016-0
     return data
 
 
-def detect_convergence_signals(sp500_data, nasdaq_data, window=15, threshold=50, min_gap=100):
-    """
-    Detect convergence signals when S&P 500 and Nasdaq 100 returns are similar.
-    
-    This identifies potential buying opportunities when both indices show similar performance.
-    
-    Args:
-        sp500_data: S&P 500 investment DataFrame
-        nasdaq_data: Nasdaq 100 investment DataFrame
-        window: Rolling window size for smoothing (days)
-        threshold: Threshold for convergence (return rate difference)
-        min_gap: Minimum days between convergence signals
-    
-    Returns:
-        convergence_signals: List of convergence signal dates
-        rolling_diff: Series of rolling differences
-    """
-    # Calculate returns
-    sp500_returns = (sp500_data['Cumulative_Value'] / sp500_data['Cumulative_Value'].iloc[0] - 1) * 100
-    nasdaq_returns = (nasdaq_data['Cumulative_Value'] / nasdaq_data['Cumulative_Value'].iloc[0] - 1) * 100
-    
-    # Align indices
-    min_len = min(len(sp500_returns), len(nasdaq_returns))
-    sp500_returns = sp500_returns.iloc[:min_len]
-    nasdaq_returns = nasdaq_returns.iloc[:min_len]
-    
-    # Calculate difference between returns
-    return_diff = (sp500_returns - nasdaq_returns).abs()
-    
-    # Apply rolling average to smooth the difference
-    rolling_diff = return_diff.rolling(window=window, center=True).mean()
-    
-    # Find convergence points (where difference is below threshold)
-    convergence_mask = rolling_diff < threshold
-    convergence_indices = convergence_mask[convergence_mask].index.tolist()
-    
-    if not convergence_indices:
-        return [], rolling_diff
-    
-    # Group consecutive convergence dates and select the best one from each group
-    convergence_signals = []
-    current_group = [convergence_indices[0]]
-    
-    for i in range(1, len(convergence_indices)):
-        if (convergence_indices[i] - current_group[-1]).days <= 1:
-            current_group.append(convergence_indices[i])
-        else:
-            # End of current group, find the date with minimum difference
-            best_date = min(current_group, key=lambda x: rolling_diff[x])
-            convergence_signals.append(best_date)
-            current_group = [convergence_indices[i]]
-    
-    # Don't forget the last group
-    if current_group:
-        best_date = min(current_group, key=lambda x: rolling_diff[x])
-        convergence_signals.append(best_date)
-    
-    # Enforce minimum gap between signals
-    filtered_signals = []
-    for signal in convergence_signals:
-        if not filtered_signals or (signal - filtered_signals[-1]).days >= min_gap:
-            filtered_signals.append(signal)
-    
-    return filtered_signals, rolling_diff
 
 
 def main():
@@ -218,10 +154,6 @@ def main():
     nasdaq_4x = calculate_leveraged_investment('QQQ', leverage_factor=4, 
                                               start_date=start_date, end_date=end_date)
     
-    # Calculate convergence signals
-    convergence_signals_3x, rolling_diff_3x = detect_convergence_signals(sp500_3x, nasdaq_3x)
-    convergence_signals_4x, rolling_diff_4x = detect_convergence_signals(sp500_4x, nasdaq_4x)
-    
     # Calculate total investment
     total_investment = 10_000 / 1_000_000 * len(sp500_3x)  # in millions
     
@@ -233,14 +165,6 @@ def main():
     print(f"\n4x Leverage Final Values:")
     print(f"  S&P 500 (SPY): ₩{sp500_4x['Cumulative_Value'].iloc[-1]:,.0f}")
     print(f"  Nasdaq 100 (QQQ): ₩{nasdaq_4x['Cumulative_Value'].iloc[-1]:,.0f}")
-    
-    print(f"\n📊 Convergence Signals (Buy Opportunity Areas):")
-    print(f"  3x Leverage: {len(convergence_signals_3x)} days detected")
-    print(f"  4x Leverage: {len(convergence_signals_4x)} days detected")
-    
-    if len(convergence_signals_3x) > 0:
-        convergence_dates_3x = [d.strftime('%Y-%m-%d') for d in convergence_signals_3x]
-        print(f"  3x Convergence dates (first 10): {convergence_dates_3x[:10]}")
     
     # Calculate display date range based on --size parameter
     end_date_obj = pd.to_datetime(end_date)
@@ -262,13 +186,6 @@ def main():
              label='S&P 500 (3x Leverage)', linewidth=2, color='#1f77b4')
     plt.plot(nasdaq_3x.index[mask_3x_nasdaq], nasdaq_3x.loc[mask_3x_nasdaq, 'Cumulative_Value'] / 1_000_000, 
              label='Nasdaq 100 (3x Leverage)', linewidth=2, color='#ff7f0e')
-    
-    # Add convergence signal markers for 3x (filtered by display range)
-    convergence_signals_3x_filtered = [d for d in convergence_signals_3x if display_start_date <= d <= end_date_obj]
-    if len(convergence_signals_3x_filtered) > 0:
-        convergence_prices_sp500 = sp500_3x.loc[convergence_signals_3x_filtered, 'Cumulative_Value'] / 1_000_000
-        plt.scatter(convergence_signals_3x_filtered, convergence_prices_sp500, color='#FF1493', s=150, marker='*', 
-                   label='Convergence Signal', zorder=5, edgecolors='#C71585', linewidth=2)
     
     plt.axhline(y=total_investment, color='gray', linestyle='--', 
                 label=f'Total Investment (₩{total_investment*1_000_000:,.0f})', alpha=0.7)
@@ -295,16 +212,6 @@ def main():
              label='S&P 500 (4x Leverage)', linewidth=2, color='#2ca02c')
     plt.plot(nasdaq_4x.index[mask_4x_nasdaq], nasdaq_4x.loc[mask_4x_nasdaq, 'Cumulative_Value'] / 1_000_000, 
              label='Nasdaq 100 (4x Leverage)', linewidth=2, color='#d62728')
-    
-    # Add convergence signal markers for 4x (filtered by display range)
-    convergence_signals_4x_filtered = [d for d in convergence_signals_4x if display_start_date <= d <= end_date_obj]
-    if len(convergence_signals_4x_filtered) > 0:
-        convergence_prices_sp500_4x = sp500_4x.loc[convergence_signals_4x_filtered, 'Cumulative_Value'] / 1_000_000
-        convergence_prices_nasdaq_4x = nasdaq_4x.loc[convergence_signals_4x_filtered, 'Cumulative_Value'] / 1_000_000
-        plt.scatter(convergence_signals_4x_filtered, convergence_prices_sp500_4x, color='#00FF00', s=150, marker='*', 
-                   label='Convergence Signal (4x)', zorder=5, edgecolors='#228B22', linewidth=2)
-        plt.scatter(convergence_signals_4x_filtered, convergence_prices_nasdaq_4x, color='#00FF00', s=150, marker='*', 
-                   zorder=5, edgecolors='#228B22', linewidth=2)
     
     plt.axhline(y=total_investment, color='gray', linestyle='--', 
                 label=f'Total Investment (₩{total_investment*1_000_000:,.0f})', alpha=0.7)
@@ -338,13 +245,6 @@ def main():
     plt.plot(nasdaq_4x.index[mask_comparison_nasdaq_4x], nasdaq_4x.loc[mask_comparison_nasdaq_4x, 'Cumulative_Value'] / 1_000_000, 
              label='Nasdaq 100 (4x Leverage)', linewidth=2, color='#d62728', linestyle='--')
     
-    # Add convergence signal markers for comparison (use 3x signals, filtered by display range)
-    convergence_signals_3x_filtered_comp = [d for d in convergence_signals_3x if display_start_date <= d <= end_date_obj]
-    if len(convergence_signals_3x_filtered_comp) > 0:
-        convergence_prices_sp500 = sp500_3x.loc[convergence_signals_3x_filtered_comp, 'Cumulative_Value'] / 1_000_000
-        plt.scatter(convergence_signals_3x_filtered_comp, convergence_prices_sp500, color='#00FFFF', s=150, marker='*', 
-                   label='Convergence Signal', zorder=5, edgecolors='#0088CC', linewidth=2)
-    
     plt.axhline(y=total_investment, color='gray', linestyle='--', 
                 label=f'Total Investment (₩{total_investment*1_000_000:,.0f})', alpha=0.7)
     
@@ -376,13 +276,6 @@ def main():
     ax1.plot(nasdaq_3x.index[mask_3x_price_nasdaq], nasdaq_3x.loc[mask_3x_price_nasdaq, 'Cumulative_Value'] / 1_000_000, 
              label='Nasdaq 100 (3x Leverage)', linewidth=2, color='#ff7f0e')
     
-    # Add convergence signals for 3x (filtered by display range)
-    convergence_signals_3x_filtered_price = [d for d in convergence_signals_3x if display_start_date <= d <= end_date_obj]
-    if len(convergence_signals_3x_filtered_price) > 0:
-        convergence_prices_sp500 = sp500_3x.loc[convergence_signals_3x_filtered_price, 'Cumulative_Value'] / 1_000_000
-        ax1.scatter(convergence_signals_3x_filtered_price, convergence_prices_sp500, color='#FF1493', s=150, marker='*', 
-                   label='Convergence Signal', zorder=5, edgecolors='#C71585', linewidth=2)
-    
     # Plot raw prices on secondary axis (filtered by display date range)
     ax1_twin.plot(sp500_prices.index[mask_3x_price_sp500_prices], sp500_prices.loc[mask_3x_price_sp500_prices, sp500_close_col], 
                   label='SPY Price', linewidth=1.5, color='#1f77b4', alpha=0.5, linestyle='--')
@@ -411,13 +304,6 @@ def main():
              label='S&P 500 (4x Leverage)', linewidth=2, color='#2ca02c')
     ax2.plot(nasdaq_4x.index[mask_4x_price_nasdaq], nasdaq_4x.loc[mask_4x_price_nasdaq, 'Cumulative_Value'] / 1_000_000, 
              label='Nasdaq 100 (4x Leverage)', linewidth=2, color='#d62728')
-    
-    # Add convergence signals for 4x (filtered by display range)
-    convergence_signals_4x_filtered_price = [d for d in convergence_signals_4x if display_start_date <= d <= end_date_obj]
-    if len(convergence_signals_4x_filtered_price) > 0:
-        convergence_prices_sp500_4x = sp500_4x.loc[convergence_signals_4x_filtered_price, 'Cumulative_Value'] / 1_000_000
-        ax2.scatter(convergence_signals_4x_filtered_price, convergence_prices_sp500_4x, color='#00FF00', s=150, marker='*', 
-                   label='Convergence Signal', zorder=5, edgecolors='#228B22', linewidth=2)
     
     # Plot raw prices on secondary axis (filtered by display date range)
     ax2_twin.plot(sp500_prices.index[mask_4x_price_sp500_prices], sp500_prices.loc[mask_4x_price_sp500_prices, sp500_close_col], 

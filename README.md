@@ -1,6 +1,6 @@
 # Leveraged Investment Analysis Tool
 
-A Python tool for analyzing daily 10,000 KRW investments in 3x and 4x leveraged S&P 500 (SPY) and Nasdaq 100 (QQQ) products, with automatic convergence signal detection.
+A Python tool for analyzing daily 10,000 KRW investments in 3x and 4x leveraged S&P 500 (SPY) and Nasdaq 100 (QQQ) products, for strategic investment decisions.
 
 ## Introduction
 
@@ -15,7 +15,6 @@ This project is inspired by [this YouTube video](https://youtube.com/shorts/TlbQ
 
 - **Daily Investment Simulation**: Models daily 10,000 KRW purchases from any date range
 - **Multiple Leverage Options**: Analyze both 3x and 4x leveraged strategies
-- **Convergence Detection**: Automatically identifies when S&P 500 and Nasdaq returns are similar (buy opportunity signals)
 - **Flexible Date Range**: Specify custom start/end dates with `--start` and `--end`
 - **Display Control**: Use `--size` parameter to show only the last N years while maintaining full calculations
 - **Multi-chart Visualization**: 
@@ -86,10 +85,6 @@ Period: 2023-01-01 to 2024-12-31
   S&P 500 (SPY): ₩6,289,054
   Nasdaq 100 (QQQ): ₩6,621,938
 
-📊 Convergence Signals (Buy Opportunity Areas):
-  3x Leverage: 1 days detected
-  4x Leverage: 1 days detected
-  3x Convergence dates (first 10): ['2023-01-12']
 ```
 
 ## How It Works
