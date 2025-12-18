@@ -1,0 +1,157 @@
+[
+  {
+    "date": "2000-03-10",
+    "label": "Dot-com Bubble Peak",
+    "description": "Tech bubble peak"
+  },
+  {
+    "date": "2001-09-11",
+    "label": "9/11 Attacks",
+    "description": "Terrorist attacks impacting markets"
+  },
+  {
+    "date": "2001-12-02",
+    "label": "Enron Bankruptcy",
+    "description": "Corporate accounting scandal"
+  },
+  {
+    "date": "2002-06-25",
+    "label": "WorldCom Bankruptcy",
+    "description": "Accounting scandal"
+  },
+  {
+    "date": "2007-10-09",
+    "label": "Quant Funds Turmoil",
+    "description": "Liquidity/sequencing issues among quant funds"
+  },
+  {
+    "date": "2008-01-21",
+    "label": "Bear Stearns Rescue",
+    "description": "Early subprime stress"
+  },
+  {
+    "date": "2008-09-15",
+    "label": "Lehman Brothers Collapse",
+    "description": "Major financial crisis event"
+  },
+  {
+    "date": "2009-03-09",
+    "label": "Financial Crisis Low",
+    "description": "Market bottom after crisis"
+  },
+  {
+    "date": "2010-05-06",
+    "label": "Flash Crash",
+    "description": "Rapid market plunge and partial recovery"
+  },
+  {
+    "date": "2011-08-05",
+    "label": "US Debt Downgrade",
+    "description": "S&P downgrade of US credit rating"
+  },
+  {
+    "date": "2011-10-03",
+    "label": "Eurozone Concerns",
+    "description": "Sovereign debt tensions peak"
+  },
+  {
+    "date": "2013-06-19",
+    "label": "Taper Tantrum",
+    "description": "Fed tapering concerns raised volatility"
+  },
+  {
+    "date": "2015-08-24",
+    "label": "China Slowdown / Market Shock",
+    "description": "Concerns about Chinese growth"
+  },
+  {
+    "date": "2016-06-24",
+    "label": "Brexit Vote",
+    "description": "UK referendum market reaction"
+  },
+  {
+    "date": "2018-02-05",
+    "label": "Volatility Spike 2018",
+    "description": "Early 2018 volatility spike"
+  },
+  {
+    "date": "2018-03-08",
+    "label": "Trump Tariffs: Steel & Aluminum",
+    "description": "Sec. 232 tariffs announced"
+  },
+  {
+    "date": "2018-12-24",
+    "label": "Year-end Selloff 2018",
+    "description": "Market weakness at year-end"
+  },
+  {
+    "date": "2019-05-10",
+    "label": "US-China Tariff Escalation",
+    "description": "Tariff increases and sanctions announced"
+  },
+  {
+    "date": "2019-08-05",
+    "label": "China RMB Devaluation",
+    "description": "RMB devaluation and trade tensions"
+  },
+  {
+    "date": "2020-02-20",
+    "label": "COVID-19 Selloff Start",
+    "description": "Pandemic-driven market crash begins"
+  },
+  {
+    "date": "2020-03-15",
+    "label": "1.00-1.25% -> 0.00-0.25% (Final: 0.25%)",
+    "description": "Fed Emergency Cuts (COVID-19 response) - 1.00% reduction"
+  },
+  {
+    "date": "2020-04-20",
+    "label": "WTI Negative Price",
+    "description": "Oil futures went negative"
+  },
+  {
+    "date": "2021-01-28",
+    "label": "GME Short Squeeze",
+    "description": "Meme stock retail-driven rally"
+  },
+  {
+    "date": "2021-03-26",
+    "label": "Archegos Collapse",
+    "description": "Family office margin unwind impacting banks"
+  },
+  {
+    "date": "2021-11-15",
+    "label": "Inflation Concerns 2021",
+    "description": "Rising inflation readings"
+  },
+  {
+    "date": "2022-02-24",
+    "label": "Russia-Ukraine War",
+    "description": "Geopolitical shock to markets"
+  },
+  {
+    "date": "2022-07-27",
+    "label": "1.50-1.75% -> 2.25-2.50% (Final: 2.50%)",
+    "description": "Fed Rate Hike 2022 (0.75% increase) - significant tightening"
+  },
+  {
+    "date": "2022-09-28",
+    "label": "UK Gilt Crisis",
+    "description": "LDI and gilt market stress"
+  },
+  {
+    "date": "2023-03-10",
+    "label": "SVB Collapse",
+    "description": "Silicon Valley Bank failure"
+  },
+  {
+    "date": "2023-03-19",
+    "label": "Credit Suisse Rescue",
+    "description": "UBS takeover of Credit Suisse"
+  },
+  {
+    "date": "2024-08-05",
+    "label": "Japan Yen Crisis",
+    "description": "BOJ policy shift and FX stress"
+  }
+]

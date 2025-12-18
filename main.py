@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 import argparse
 from datetime import datetime
 import sys
+import json
+import os
 
 
 def calculate_leveraged_investment(ticker, leverage_factor=3, start_date="2016-01-01", end_date=None):
@@ -89,24 +91,30 @@ def calculate_leveraged_investment(ticker, leverage_factor=3, start_date="2016-0
 
 def get_financial_events():
     """
-    Get major financial events since 2000 for marking on charts.
+    Get major financial events from events.json file.
     
     Returns:
         List of tuples: (date_str, event_name, short_description)
     """
-    events = [
-        ('2000-03-10', 'Dot-com Bubble', 'Tech bubble peak'),
-        ('2001-09-11', '9/11 Attacks', 'Terrorist attacks'),
-        ('2008-09-15', 'Lehman Brothers', 'Financial crisis'),
-        ('2009-03-09', 'Financial Crisis Low', 'Market bottom'),
-        ('2011-08-05', 'US Debt Downgrade', 'S&P downgrade'),
-        ('2020-03-23', 'COVID-19 Low', 'Market crash bottom'),
-        ('2021-01-28', 'GME Short Squeeze', 'Meme stock rally'),
-        ('2022-09-28', 'UK Gilt Crisis', 'LDI crisis'),
-        ('2023-03-10', 'SVB Collapse', 'Bank run/failure'),
-        ('2024-08-05', 'Japan Yen Crisis', 'BOJ policy shift'),
-    ]
-    return events
+    # Determine the path to events.json (same directory as main.py)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    events_file = os.path.join(script_dir, 'events.json')
+    
+    # Load events from JSON file
+    try:
+        with open(events_file, 'r', encoding='utf-8') as f:
+            events_data = json.load(f)
+        
+        # Convert JSON format to tuple format
+        events = [(event['date'], event['label'], event['description']) for event in events_data]
+        return events
+    
+    except FileNotFoundError:
+        print(f"⚠ Warning: events.json not found at {events_file}. Using empty event list.")
+        return []
+    except json.JSONDecodeError:
+        print(f"⚠ Warning: events.json is invalid JSON. Using empty event list.")
+        return []
 
 
 
