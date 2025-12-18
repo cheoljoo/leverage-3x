@@ -163,6 +163,27 @@ def main():
     print("=" * 60)
     print("Leveraged Investment Analysis")
     print("=" * 60)
+    
+    # Adjust start_date if Nasdaq (QQQ) doesn't have data for that date
+    # Nasdaq 100 index started in 1985, but QQQ ETF started in 1999
+    print("Checking data availability for QQQ...")
+    test_nasdaq = yf.download('QQQ', start=start_date, end=end_date, progress=False)
+    
+    # Handle MultiIndex columns
+    if isinstance(test_nasdaq.columns, pd.MultiIndex):
+        test_nasdaq.columns = test_nasdaq.columns.get_level_values(0)
+    
+    if len(test_nasdaq) == 0 or test_nasdaq.index[0] > pd.to_datetime(start_date):
+        # QQQ doesn't have data for the requested start_date
+        actual_start = test_nasdaq.index[0].strftime("%Y-%m-%d") if len(test_nasdaq) > 0 else None
+        if actual_start:
+            print(f"⚠ Nasdaq (QQQ) data not available from {start_date}")
+            print(f"✓ Adjusting start date to {actual_start}")
+            start_date = actual_start
+        else:
+            print(f"✗ Error: No Nasdaq (QQQ) data available for date range {start_date} to {end_date}")
+            return
+    
     print(f"Period: {start_date} to {end_date}\n")
     
     # Calculate 3x leverage
@@ -222,18 +243,21 @@ def main():
     end_date_obj = pd.to_datetime(end_date)
     if display_size_years > 0:
         display_start_date = end_date_obj - pd.DateOffset(years=display_size_years)
+        size_label = f" (Display Size: {display_size_years} year{'s' if display_size_years > 1 else ''})"
     else:
         display_start_date = pd.to_datetime(start_date)
+        size_label = " (Display Size: All data)"
     
     # Create 3x Leverage visualization
     plt.figure(figsize=(14, 7))
     
-    # Filter data by display date range
-    mask_3x = (sp500_3x.index >= display_start_date) & (sp500_3x.index <= end_date_obj)
+    # Filter data by display date range (create mask for each dataset independently)
+    mask_3x_sp500 = (sp500_3x.index >= display_start_date) & (sp500_3x.index <= end_date_obj)
+    mask_3x_nasdaq = (nasdaq_3x.index >= display_start_date) & (nasdaq_3x.index <= end_date_obj)
     
-    plt.plot(sp500_3x.index[mask_3x], sp500_3x.loc[mask_3x, 'Cumulative_Value'] / 1_000_000, 
+    plt.plot(sp500_3x.index[mask_3x_sp500], sp500_3x.loc[mask_3x_sp500, 'Cumulative_Value'] / 1_000_000, 
              label='S&P 500 (3x Leverage)', linewidth=2, color='#1f77b4')
-    plt.plot(nasdaq_3x.index[mask_3x], nasdaq_3x.loc[mask_3x, 'Cumulative_Value'] / 1_000_000, 
+    plt.plot(nasdaq_3x.index[mask_3x_nasdaq], nasdaq_3x.loc[mask_3x_nasdaq, 'Cumulative_Value'] / 1_000_000, 
              label='Nasdaq 100 (3x Leverage)', linewidth=2, color='#ff7f0e')
     
     # Add convergence signal markers for 3x (filtered by display range)
@@ -248,7 +272,7 @@ def main():
     
     plt.xlabel('Date', fontsize=12)
     plt.ylabel('Value (Million KRW)', fontsize=12)
-    plt.title(f'Daily 10,000 KRW Investment in 3x Leveraged Products ({start_date} ~ {end_date})', fontsize=14, fontweight='bold')
+    plt.title(f'Daily 10,000 KRW Investment in 3x Leveraged Products ({start_date} ~ {end_date}){size_label}', fontsize=14, fontweight='bold')
     plt.legend(fontsize=11, loc='upper left')
     plt.grid(True, alpha=0.3)
     plt.xticks(rotation=45)
@@ -260,12 +284,13 @@ def main():
     # Create 4x Leverage visualization
     plt.figure(figsize=(14, 7))
     
-    # Filter data by display date range
-    mask_4x = (sp500_4x.index >= display_start_date) & (sp500_4x.index <= end_date_obj)
+    # Filter data by display date range (create mask for each dataset independently)
+    mask_4x_sp500 = (sp500_4x.index >= display_start_date) & (sp500_4x.index <= end_date_obj)
+    mask_4x_nasdaq = (nasdaq_4x.index >= display_start_date) & (nasdaq_4x.index <= end_date_obj)
     
-    plt.plot(sp500_4x.index[mask_4x], sp500_4x.loc[mask_4x, 'Cumulative_Value'] / 1_000_000, 
+    plt.plot(sp500_4x.index[mask_4x_sp500], sp500_4x.loc[mask_4x_sp500, 'Cumulative_Value'] / 1_000_000, 
              label='S&P 500 (4x Leverage)', linewidth=2, color='#2ca02c')
-    plt.plot(nasdaq_4x.index[mask_4x], nasdaq_4x.loc[mask_4x, 'Cumulative_Value'] / 1_000_000, 
+    plt.plot(nasdaq_4x.index[mask_4x_nasdaq], nasdaq_4x.loc[mask_4x_nasdaq, 'Cumulative_Value'] / 1_000_000, 
              label='Nasdaq 100 (4x Leverage)', linewidth=2, color='#d62728')
     
     # Add convergence signal markers for 4x (filtered by display range)
@@ -283,7 +308,7 @@ def main():
     
     plt.xlabel('Date', fontsize=12)
     plt.ylabel('Value (Million KRW)', fontsize=12)
-    plt.title(f'Daily 10,000 KRW Investment in 4x Leveraged Products ({start_date} ~ {end_date})', fontsize=14, fontweight='bold')
+    plt.title(f'Daily 10,000 KRW Investment in 4x Leveraged Products ({start_date} ~ {end_date}){size_label}', fontsize=14, fontweight='bold')
     plt.legend(fontsize=11, loc='upper left')
     plt.grid(True, alpha=0.3)
     plt.xticks(rotation=45)
@@ -295,16 +320,19 @@ def main():
     # Create comparison visualization
     plt.figure(figsize=(14, 7))
     
-    # Filter data by display date range
-    mask_comparison = (sp500_3x.index >= display_start_date) & (sp500_3x.index <= end_date_obj)
+    # Filter data by display date range (create mask for each dataset independently)
+    mask_comparison_sp500_3x = (sp500_3x.index >= display_start_date) & (sp500_3x.index <= end_date_obj)
+    mask_comparison_nasdaq_3x = (nasdaq_3x.index >= display_start_date) & (nasdaq_3x.index <= end_date_obj)
+    mask_comparison_sp500_4x = (sp500_4x.index >= display_start_date) & (sp500_4x.index <= end_date_obj)
+    mask_comparison_nasdaq_4x = (nasdaq_4x.index >= display_start_date) & (nasdaq_4x.index <= end_date_obj)
     
-    plt.plot(sp500_3x.index[mask_comparison], sp500_3x.loc[mask_comparison, 'Cumulative_Value'] / 1_000_000, 
+    plt.plot(sp500_3x.index[mask_comparison_sp500_3x], sp500_3x.loc[mask_comparison_sp500_3x, 'Cumulative_Value'] / 1_000_000, 
              label='S&P 500 (3x Leverage)', linewidth=2, color='#1f77b4')
-    plt.plot(nasdaq_3x.index[mask_comparison], nasdaq_3x.loc[mask_comparison, 'Cumulative_Value'] / 1_000_000, 
+    plt.plot(nasdaq_3x.index[mask_comparison_nasdaq_3x], nasdaq_3x.loc[mask_comparison_nasdaq_3x, 'Cumulative_Value'] / 1_000_000, 
              label='Nasdaq 100 (3x Leverage)', linewidth=2, color='#ff7f0e')
-    plt.plot(sp500_4x.index[mask_comparison], sp500_4x.loc[mask_comparison, 'Cumulative_Value'] / 1_000_000, 
+    plt.plot(sp500_4x.index[mask_comparison_sp500_4x], sp500_4x.loc[mask_comparison_sp500_4x, 'Cumulative_Value'] / 1_000_000, 
              label='S&P 500 (4x Leverage)', linewidth=2, color='#2ca02c', linestyle='--')
-    plt.plot(nasdaq_4x.index[mask_comparison], nasdaq_4x.loc[mask_comparison, 'Cumulative_Value'] / 1_000_000, 
+    plt.plot(nasdaq_4x.index[mask_comparison_nasdaq_4x], nasdaq_4x.loc[mask_comparison_nasdaq_4x, 'Cumulative_Value'] / 1_000_000, 
              label='Nasdaq 100 (4x Leverage)', linewidth=2, color='#d62728', linestyle='--')
     
     # Add convergence signal markers for comparison (use 3x signals, filtered by display range)
@@ -319,7 +347,7 @@ def main():
     
     plt.xlabel('Date', fontsize=12)
     plt.ylabel('Value (Million KRW)', fontsize=12)
-    plt.title(f'Comparison: 3x vs 4x Leveraged Products ({start_date} ~ {end_date})', fontsize=14, fontweight='bold')
+    plt.title(f'Comparison: 3x vs 4x Leveraged Products ({start_date} ~ {end_date}){size_label}', fontsize=14, fontweight='bold')
     plt.legend(fontsize=11, loc='upper left')
     plt.grid(True, alpha=0.3)
     plt.xticks(rotation=45)
@@ -334,12 +362,15 @@ def main():
     # 3x leverage with raw prices
     ax1_twin = ax1.twinx()
     
-    # Filter data by display date range for 3x
-    mask_3x_price = (sp500_3x.index >= display_start_date) & (sp500_3x.index <= end_date_obj)
+    # Filter data by display date range for 3x (create mask for each dataset independently)
+    mask_3x_price_sp500 = (sp500_3x.index >= display_start_date) & (sp500_3x.index <= end_date_obj)
+    mask_3x_price_nasdaq = (nasdaq_3x.index >= display_start_date) & (nasdaq_3x.index <= end_date_obj)
+    mask_3x_price_sp500_prices = (sp500_prices.index >= display_start_date) & (sp500_prices.index <= end_date_obj)
+    mask_3x_price_nasdaq_prices = (nasdaq_prices.index >= display_start_date) & (nasdaq_prices.index <= end_date_obj)
     
-    ax1.plot(sp500_3x.index[mask_3x_price], sp500_3x.loc[mask_3x_price, 'Cumulative_Value'] / 1_000_000, 
+    ax1.plot(sp500_3x.index[mask_3x_price_sp500], sp500_3x.loc[mask_3x_price_sp500, 'Cumulative_Value'] / 1_000_000, 
              label='S&P 500 (3x Leverage)', linewidth=2, color='#1f77b4')
-    ax1.plot(nasdaq_3x.index[mask_3x_price], nasdaq_3x.loc[mask_3x_price, 'Cumulative_Value'] / 1_000_000, 
+    ax1.plot(nasdaq_3x.index[mask_3x_price_nasdaq], nasdaq_3x.loc[mask_3x_price_nasdaq, 'Cumulative_Value'] / 1_000_000, 
              label='Nasdaq 100 (3x Leverage)', linewidth=2, color='#ff7f0e')
     
     # Add convergence signals for 3x (filtered by display range)
@@ -350,15 +381,15 @@ def main():
                    label='Convergence Signal', zorder=5, edgecolors='#C71585', linewidth=2)
     
     # Plot raw prices on secondary axis (filtered by display date range)
-    ax1_twin.plot(sp500_prices.index[mask_3x_price], sp500_prices.loc[mask_3x_price, sp500_close_col], 
+    ax1_twin.plot(sp500_prices.index[mask_3x_price_sp500_prices], sp500_prices.loc[mask_3x_price_sp500_prices, sp500_close_col], 
                   label='SPY Price', linewidth=1.5, color='#1f77b4', alpha=0.5, linestyle='--')
-    ax1_twin.plot(nasdaq_prices.index[mask_3x_price], nasdaq_prices.loc[mask_3x_price, nasdaq_close_col], 
+    ax1_twin.plot(nasdaq_prices.index[mask_3x_price_nasdaq_prices], nasdaq_prices.loc[mask_3x_price_nasdaq_prices, nasdaq_close_col], 
                   label='QQQ Price', linewidth=1.5, color='#ff7f0e', alpha=0.5, linestyle='--')
     
     ax1.set_xlabel('Date', fontsize=11)
     ax1.set_ylabel('Leverage Investment Value (Million KRW)', fontsize=11)
     ax1_twin.set_ylabel('Stock Price (USD)', fontsize=11)
-    ax1.set_title(f'3x Leverage Investment with Price Comparison ({start_date} ~ {end_date})', fontsize=12, fontweight='bold')
+    ax1.set_title(f'3x Leverage Investment with Price Comparison ({start_date} ~ {end_date}){size_label}', fontsize=12, fontweight='bold')
     ax1.legend(loc='upper left', fontsize=10)
     ax1_twin.legend(loc='upper right', fontsize=10)
     ax1.grid(True, alpha=0.3)
@@ -367,12 +398,15 @@ def main():
     # 4x leverage with raw prices
     ax2_twin = ax2.twinx()
     
-    # Filter data by display date range for 4x
-    mask_4x_price = (sp500_4x.index >= display_start_date) & (sp500_4x.index <= end_date_obj)
+    # Filter data by display date range for 4x (create mask for each dataset independently)
+    mask_4x_price_sp500 = (sp500_4x.index >= display_start_date) & (sp500_4x.index <= end_date_obj)
+    mask_4x_price_nasdaq = (nasdaq_4x.index >= display_start_date) & (nasdaq_4x.index <= end_date_obj)
+    mask_4x_price_sp500_prices = (sp500_prices.index >= display_start_date) & (sp500_prices.index <= end_date_obj)
+    mask_4x_price_nasdaq_prices = (nasdaq_prices.index >= display_start_date) & (nasdaq_prices.index <= end_date_obj)
     
-    ax2.plot(sp500_4x.index[mask_4x_price], sp500_4x.loc[mask_4x_price, 'Cumulative_Value'] / 1_000_000, 
+    ax2.plot(sp500_4x.index[mask_4x_price_sp500], sp500_4x.loc[mask_4x_price_sp500, 'Cumulative_Value'] / 1_000_000, 
              label='S&P 500 (4x Leverage)', linewidth=2, color='#2ca02c')
-    ax2.plot(nasdaq_4x.index[mask_4x_price], nasdaq_4x.loc[mask_4x_price, 'Cumulative_Value'] / 1_000_000, 
+    ax2.plot(nasdaq_4x.index[mask_4x_price_nasdaq], nasdaq_4x.loc[mask_4x_price_nasdaq, 'Cumulative_Value'] / 1_000_000, 
              label='Nasdaq 100 (4x Leverage)', linewidth=2, color='#d62728')
     
     # Add convergence signals for 4x (filtered by display range)
@@ -383,15 +417,15 @@ def main():
                    label='Convergence Signal', zorder=5, edgecolors='#228B22', linewidth=2)
     
     # Plot raw prices on secondary axis (filtered by display date range)
-    ax2_twin.plot(sp500_prices.index[mask_4x_price], sp500_prices.loc[mask_4x_price, sp500_close_col], 
+    ax2_twin.plot(sp500_prices.index[mask_4x_price_sp500_prices], sp500_prices.loc[mask_4x_price_sp500_prices, sp500_close_col], 
                   label='SPY Price', linewidth=1.5, color='#2ca02c', alpha=0.5, linestyle='--')
-    ax2_twin.plot(nasdaq_prices.index[mask_4x_price], nasdaq_prices.loc[mask_4x_price, nasdaq_close_col], 
+    ax2_twin.plot(nasdaq_prices.index[mask_4x_price_nasdaq_prices], nasdaq_prices.loc[mask_4x_price_nasdaq_prices, nasdaq_close_col], 
                   label='QQQ Price', linewidth=1.5, color='#d62728', alpha=0.5, linestyle='--')
     
     ax2.set_xlabel('Date', fontsize=11)
     ax2.set_ylabel('Leverage Investment Value (Million KRW)', fontsize=11)
     ax2_twin.set_ylabel('Stock Price (USD)', fontsize=11)
-    ax2.set_title(f'4x Leverage Investment with Price Comparison ({start_date} ~ {end_date})', fontsize=12, fontweight='bold')
+    ax2.set_title(f'4x Leverage Investment with Price Comparison ({start_date} ~ {end_date}){size_label}', fontsize=12, fontweight='bold')
     ax2.legend(loc='upper left', fontsize=10)
     ax2_twin.legend(loc='upper right', fontsize=10)
     ax2.grid(True, alpha=0.3)
@@ -404,35 +438,38 @@ def main():
     # Create difference visualization (Nasdaq - S&P500 for 3x and 4x)
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
     
-    # Filter data by display date range
-    mask_diff = (sp500_3x.index >= display_start_date) & (sp500_3x.index <= end_date_obj)
+    # Filter data by display date range (create mask for each dataset independently)
+    mask_diff_sp500_3x = (sp500_3x.index >= display_start_date) & (sp500_3x.index <= end_date_obj)
+    mask_diff_nasdaq_3x = (nasdaq_3x.index >= display_start_date) & (nasdaq_3x.index <= end_date_obj)
+    mask_diff_sp500_4x = (sp500_4x.index >= display_start_date) & (sp500_4x.index <= end_date_obj)
+    mask_diff_nasdaq_4x = (nasdaq_4x.index >= display_start_date) & (nasdaq_4x.index <= end_date_obj)
     
     # 3x Leverage: Nasdaq(3x) - S&P500(3x)
-    diff_3x = nasdaq_3x.loc[mask_diff, 'Cumulative_Value'] / 1_000_000 - sp500_3x.loc[mask_diff, 'Cumulative_Value'] / 1_000_000
+    diff_3x = nasdaq_3x.loc[mask_diff_nasdaq_3x, 'Cumulative_Value'] / 1_000_000 - sp500_3x.loc[mask_diff_sp500_3x, 'Cumulative_Value'] / 1_000_000
     
-    ax1.plot(sp500_3x.index[mask_diff], diff_3x, linewidth=2.5, color='#d62728', label='Nasdaq(3x) - S&P500(3x)')
+    ax1.plot(sp500_3x.index[mask_diff_sp500_3x], diff_3x, linewidth=2.5, color='#d62728', label='Nasdaq(3x) - S&P500(3x)')
     ax1.axhline(y=0, color='gray', linestyle='--', alpha=0.7, label='Zero Line')
-    ax1.fill_between(sp500_3x.index[mask_diff], diff_3x, 0, where=(diff_3x >= 0), alpha=0.3, color='#2ca02c', label='Nasdaq > S&P500')
-    ax1.fill_between(sp500_3x.index[mask_diff], diff_3x, 0, where=(diff_3x < 0), alpha=0.3, color='#1f77b4', label='S&P500 > Nasdaq')
+    ax1.fill_between(sp500_3x.index[mask_diff_sp500_3x], diff_3x, 0, where=(diff_3x >= 0), alpha=0.3, color='#2ca02c', label='Nasdaq > S&P500')
+    ax1.fill_between(sp500_3x.index[mask_diff_sp500_3x], diff_3x, 0, where=(diff_3x < 0), alpha=0.3, color='#1f77b4', label='S&P500 > Nasdaq')
     
     ax1.set_xlabel('Date', fontsize=11)
     ax1.set_ylabel('Value Difference (Million KRW)', fontsize=11)
-    ax1.set_title(f'3x Leverage: Nasdaq(3x) - S&P500(3x) ({start_date} ~ {end_date})', fontsize=12, fontweight='bold')
+    ax1.set_title(f'3x Leverage: Nasdaq(3x) - S&P500(3x) ({start_date} ~ {end_date}){size_label}', fontsize=12, fontweight='bold')
     ax1.legend(fontsize=10, loc='best')
     ax1.grid(True, alpha=0.3)
     ax1.tick_params(axis='x', rotation=45)
     
     # 4x Leverage: Nasdaq(4x) - S&P500(4x)
-    diff_4x = nasdaq_4x.loc[mask_diff, 'Cumulative_Value'] / 1_000_000 - sp500_4x.loc[mask_diff, 'Cumulative_Value'] / 1_000_000
+    diff_4x = nasdaq_4x.loc[mask_diff_nasdaq_4x, 'Cumulative_Value'] / 1_000_000 - sp500_4x.loc[mask_diff_sp500_4x, 'Cumulative_Value'] / 1_000_000
     
-    ax2.plot(sp500_4x.index[mask_diff], diff_4x, linewidth=2.5, color='#ff7f0e', label='Nasdaq(4x) - S&P500(4x)')
+    ax2.plot(sp500_4x.index[mask_diff_sp500_4x], diff_4x, linewidth=2.5, color='#ff7f0e', label='Nasdaq(4x) - S&P500(4x)')
     ax2.axhline(y=0, color='gray', linestyle='--', alpha=0.7, label='Zero Line')
-    ax2.fill_between(sp500_4x.index[mask_diff], diff_4x, 0, where=(diff_4x >= 0), alpha=0.3, color='#2ca02c', label='Nasdaq > S&P500')
-    ax2.fill_between(sp500_4x.index[mask_diff], diff_4x, 0, where=(diff_4x < 0), alpha=0.3, color='#1f77b4', label='S&P500 > Nasdaq')
+    ax2.fill_between(sp500_4x.index[mask_diff_sp500_4x], diff_4x, 0, where=(diff_4x >= 0), alpha=0.3, color='#2ca02c', label='Nasdaq > S&P500')
+    ax2.fill_between(sp500_4x.index[mask_diff_sp500_4x], diff_4x, 0, where=(diff_4x < 0), alpha=0.3, color='#1f77b4', label='S&P500 > Nasdaq')
     
     ax2.set_xlabel('Date', fontsize=11)
     ax2.set_ylabel('Value Difference (Million KRW)', fontsize=11)
-    ax2.set_title(f'4x Leverage: Nasdaq(4x) - S&P500(4x) ({start_date} ~ {end_date})', fontsize=12, fontweight='bold')
+    ax2.set_title(f'4x Leverage: Nasdaq(4x) - S&P500(4x) ({start_date} ~ {end_date}){size_label}', fontsize=12, fontweight='bold')
     ax2.legend(fontsize=10, loc='best')
     ax2.grid(True, alpha=0.3)
     ax2.tick_params(axis='x', rotation=45)
