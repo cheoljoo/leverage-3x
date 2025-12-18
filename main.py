@@ -434,6 +434,76 @@ def main():
     plt.savefig(f'leverage_return_rate_{start_date}_to_{end_date}.png', dpi=300, bbox_inches='tight')
     print(f"Return rate graph saved as 'leverage_return_rate_{start_date}_to_{end_date}.png'")
     
+    # Create return rate difference visualization (Nasdaq - S&P500)
+    print("Calculating return rate differences...")
+    
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+    
+    # Filter data by display date range for return rate difference
+    mask_return_diff_sp500_3x = (sp500_3x.index >= display_start_date) & (sp500_3x.index <= end_date_obj)
+    mask_return_diff_nasdaq_3x = (nasdaq_3x.index >= display_start_date) & (nasdaq_3x.index <= end_date_obj)
+    mask_return_diff_sp500_4x = (sp500_4x.index >= display_start_date) & (sp500_4x.index <= end_date_obj)
+    mask_return_diff_nasdaq_4x = (nasdaq_4x.index >= display_start_date) & (nasdaq_4x.index <= end_date_obj)
+    
+    # 3x Leverage: Nasdaq Return Rate - S&P500 Return Rate
+    sp500_3x_principal_diff = 10_000 * sp500_3x['Days_Invested']
+    sp500_3x_return_rate_diff = ((sp500_3x['Cumulative_Value'] - sp500_3x_principal_diff) / sp500_3x_principal_diff * 100).fillna(0)
+    
+    nasdaq_3x_principal_diff = 10_000 * nasdaq_3x['Days_Invested']
+    nasdaq_3x_return_rate_diff = ((nasdaq_3x['Cumulative_Value'] - nasdaq_3x_principal_diff) / nasdaq_3x_principal_diff * 100).fillna(0)
+    
+    return_rate_diff_3x = nasdaq_3x_return_rate_diff - sp500_3x_return_rate_diff
+    
+    ax1.plot(sp500_3x.index[mask_return_diff_sp500_3x], return_rate_diff_3x[mask_return_diff_sp500_3x], 
+             linewidth=2.5, color='#d62728', label='Nasdaq(3x) - S&P500(3x)')
+    ax1.axhline(y=0, color='gray', linestyle='--', alpha=0.7, label='Break-even')
+    ax1.fill_between(sp500_3x.index[mask_return_diff_sp500_3x], return_rate_diff_3x[mask_return_diff_sp500_3x], 0, 
+                     where=(return_rate_diff_3x[mask_return_diff_sp500_3x] >= 0), alpha=0.3, color='#2ca02c', 
+                     label='Nasdaq Better')
+    ax1.fill_between(sp500_3x.index[mask_return_diff_sp500_3x], return_rate_diff_3x[mask_return_diff_sp500_3x], 0, 
+                     where=(return_rate_diff_3x[mask_return_diff_sp500_3x] < 0), alpha=0.3, color='#1f77b4', 
+                     label='S&P500 Better')
+    
+    ax1.set_xlabel('Date', fontsize=11)
+    ax1.set_ylabel('Return Rate Difference (%)', fontsize=11)
+    ax1.set_title(f'3x Leverage: Nasdaq Return Rate - S&P500 Return Rate ({start_date} ~ {end_date}){size_label}', 
+                  fontsize=12, fontweight='bold')
+    ax1.legend(fontsize=10, loc='best')
+    ax1.grid(True, alpha=0.3)
+    ax1.tick_params(axis='x', rotation=45)
+    
+    # 4x Leverage: Nasdaq Return Rate - S&P500 Return Rate
+    sp500_4x_principal_diff = 10_000 * sp500_4x['Days_Invested']
+    sp500_4x_return_rate_diff = ((sp500_4x['Cumulative_Value'] - sp500_4x_principal_diff) / sp500_4x_principal_diff * 100).fillna(0)
+    
+    nasdaq_4x_principal_diff = 10_000 * nasdaq_4x['Days_Invested']
+    nasdaq_4x_return_rate_diff = ((nasdaq_4x['Cumulative_Value'] - nasdaq_4x_principal_diff) / nasdaq_4x_principal_diff * 100).fillna(0)
+    
+    return_rate_diff_4x = nasdaq_4x_return_rate_diff - sp500_4x_return_rate_diff
+    
+    ax2.plot(sp500_4x.index[mask_return_diff_sp500_4x], return_rate_diff_4x[mask_return_diff_sp500_4x], 
+             linewidth=2.5, color='#ff7f0e', label='Nasdaq(4x) - S&P500(4x)')
+    ax2.axhline(y=0, color='gray', linestyle='--', alpha=0.7, label='Break-even')
+    ax2.fill_between(sp500_4x.index[mask_return_diff_sp500_4x], return_rate_diff_4x[mask_return_diff_sp500_4x], 0, 
+                     where=(return_rate_diff_4x[mask_return_diff_sp500_4x] >= 0), alpha=0.3, color='#2ca02c', 
+                     label='Nasdaq Better')
+    ax2.fill_between(sp500_4x.index[mask_return_diff_sp500_4x], return_rate_diff_4x[mask_return_diff_sp500_4x], 0, 
+                     where=(return_rate_diff_4x[mask_return_diff_sp500_4x] < 0), alpha=0.3, color='#1f77b4', 
+                     label='S&P500 Better')
+    
+    ax2.set_xlabel('Date', fontsize=11)
+    ax2.set_ylabel('Return Rate Difference (%)', fontsize=11)
+    ax2.set_title(f'4x Leverage: Nasdaq Return Rate - S&P500 Return Rate ({start_date} ~ {end_date}){size_label}', 
+                  fontsize=12, fontweight='bold')
+    ax2.legend(fontsize=10, loc='best')
+    ax2.grid(True, alpha=0.3)
+    ax2.tick_params(axis='x', rotation=45)
+    
+    plt.tight_layout()
+    plt.savefig(f'leverage_return_rate_diff_{start_date}_to_{end_date}.png', dpi=300, bbox_inches='tight')
+    print(f"Return rate difference graph saved as 'leverage_return_rate_diff_{start_date}_to_{end_date}.png'")
+    
+    
     plt.show()
 
 
