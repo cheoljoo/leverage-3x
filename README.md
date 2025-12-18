@@ -26,6 +26,8 @@ This project is inspired by [this YouTube video](https://youtube.com/shorts/TlbQ
   - Daily return rate visualization
   - Return rate difference analysis (Nasdaq Return - S&P500 Return)
 - **Automatic Date Adjustment**: Automatically detects and adjusts to earliest available QQQ data (1999-03-10)
+- **Financial Events Markers**: Marks major financial events (2000-2024) on all graphs with vertical lines and labels
+  - Includes: Dot-com Bubble, 9/11, Financial Crisis, COVID-19, SVB Collapse, and more
 
 ## Requirements
 
@@ -119,6 +121,21 @@ Period: 2023-01-01 to 2024-12-31
 ### Automatic Date Adjustment
 - When requesting data before QQQ availability (before 1999-03-10), automatically adjusts to earliest available date
 - Prevents errors and ensures all analyses are valid
+
+### Financial Events Markers
+- Marks major financial events on all charts from 2000 onwards
+- Events include:
+  - **2000-03-10**: Dot-com Bubble peak
+  - **2001-09-11**: 9/11 Terrorist attacks
+  - **2008-09-15**: Lehman Brothers collapse
+  - **2009-03-09**: Financial crisis market bottom
+  - **2011-08-05**: US credit downgrade
+  - **2020-03-23**: COVID-19 market crash
+  - **2021-01-28**: GME short squeeze event
+  - **2022-09-28**: UK gilt crisis
+  - **2023-03-10**: Silicon Valley Bank collapse
+  - **2024-08-05**: Japan yen crisis
+- Helps understand how major events correlate with investment performance
 
 ## License
 
