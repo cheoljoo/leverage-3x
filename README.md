@@ -22,8 +22,9 @@ This project is inspired by [this YouTube video](https://youtube.com/shorts/TlbQ
   - 4x Leverage chart
   - 3x vs 4x Comparison
   - Price comparison with dual Y-axes
-  - Difference analysis (Nasdaq - S&P500)
+  - Difference analysis (Nasdaq - S&P500 cumulative value)
   - Daily return rate visualization
+  - Return rate difference analysis (Nasdaq Return - S&P500 Return)
 - **Automatic Date Adjustment**: Automatically detects and adjusts to earliest available QQQ data (1999-03-10)
 
 ## Requirements
@@ -66,13 +67,14 @@ uv run main.py --start 2020-01-01 --end 2024-12-31 --size 3
 
 ## Output
 
-The tool generates 6 high-resolution PNG charts:
+The tool generates 7 high-resolution PNG charts:
 1. `leverage_3x_investment_[dates].png` - 3x leverage analysis with cumulative investment value
 2. `leverage_4x_investment_[dates].png` - 4x leverage analysis with cumulative investment value
 3. `leverage_comparison_[dates].png` - Direct comparison of 3x vs 4x leverage strategies
 4. `leverage_with_prices_[dates].png` - Investment value with raw stock prices overlay (dual Y-axes)
 5. `leverage_difference_[dates].png` - Difference visualization showing Nasdaq(3x/4x) - S&P500(3x/4x)
 6. `leverage_return_rate_[dates].png` - Daily return rate (%) for 3x and 4x strategies
+7. `leverage_return_rate_diff_[dates].png` - Return rate difference showing Nasdaq Return - S&P500 Return for 3x and 4x
 
 ## Example Output
 
