@@ -272,6 +272,7 @@ def main():
     convergence_signals_4x_filtered = [d for d in convergence_signals_4x if display_start_date <= d <= end_date_obj]
     if len(convergence_signals_4x_filtered) > 0:
         convergence_prices_sp500_4x = sp500_4x.loc[convergence_signals_4x_filtered, 'Cumulative_Value'] / 1_000_000
+        convergence_prices_nasdaq_4x = nasdaq_4x.loc[convergence_signals_4x_filtered, 'Cumulative_Value'] / 1_000_000
         plt.scatter(convergence_signals_4x_filtered, convergence_prices_sp500_4x, color='#00FF00', s=150, marker='*', 
                    label='Convergence Signal (4x)', zorder=5, edgecolors='#228B22', linewidth=2)
         plt.scatter(convergence_signals_4x_filtered, convergence_prices_nasdaq_4x, color='#00FF00', s=150, marker='*', 
