@@ -22,6 +22,9 @@ This project is inspired by [this YouTube video](https://youtube.com/shorts/TlbQ
   - 4x Leverage chart
   - 3x vs 4x Comparison
   - Price comparison with dual Y-axes
+  - Difference analysis (Nasdaq - S&P500)
+  - Daily return rate visualization
+- **Automatic Date Adjustment**: Automatically detects and adjusts to earliest available QQQ data (1999-03-10)
 
 ## Requirements
 
@@ -63,11 +66,13 @@ uv run main.py --start 2020-01-01 --end 2024-12-31 --size 3
 
 ## Output
 
-The tool generates 4 high-resolution PNG charts:
-1. `leverage_3x_investment_[dates].png` - 3x leverage analysis
-2. `leverage_4x_investment_[dates].png` - 4x leverage analysis
-3. `leverage_comparison_[dates].png` - Direct comparison of 3x vs 4x
-4. `leverage_with_prices_[dates].png` - Investment value with raw stock prices overlay
+The tool generates 6 high-resolution PNG charts:
+1. `leverage_3x_investment_[dates].png` - 3x leverage analysis with cumulative investment value
+2. `leverage_4x_investment_[dates].png` - 4x leverage analysis with cumulative investment value
+3. `leverage_comparison_[dates].png` - Direct comparison of 3x vs 4x leverage strategies
+4. `leverage_with_prices_[dates].png` - Investment value with raw stock prices overlay (dual Y-axes)
+5. `leverage_difference_[dates].png` - Difference visualization showing Nasdaq(3x/4x) - S&P500(3x/4x)
+6. `leverage_return_rate_[dates].png` - Daily return rate (%) for 3x and 4x strategies
 
 ## Example Output
 
@@ -98,11 +103,20 @@ Period: 2023-01-01 to 2024-12-31
 - Daily returns are multiplied by the leverage factor (3x or 4x)
 - Compound returns are calculated: `(1 + leveraged_return).cumprod() - 1`
 
-### Convergence Signal Detection
-- Compares cumulative returns between S&P 500 and Nasdaq
-- Uses a 15-day rolling window to smooth the difference
-- Identifies periods where the return difference < 50
-- Enforces 100-day minimum gap between signals to avoid clustering
+### Daily Return Rate Calculation
+- Formula: `(Investment Value - Principal) / Principal × 100 (%)`
+- Principal = 10,000 KRW × number of days invested
+- Shows profitability percentage at each point in time
+
+### Difference Analysis
+- Compares cumulative investment values between Nasdaq and S&P 500
+- Separate 3x and 4x leverage difference visualization
+- Helps identify which index is outperforming
+- Color-coded: green for positive difference (Nasdaq ahead), red for negative (S&P 500 ahead)
+
+### Automatic Date Adjustment
+- When requesting data before QQQ availability (before 1999-03-10), automatically adjusts to earliest available date
+- Prevents errors and ensures all analyses are valid
 
 ## License
 
